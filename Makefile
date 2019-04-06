@@ -15,7 +15,7 @@ employee.o: employee.cpp employee.hpp
 	$(CC) -c employee.cpp
 
 schedule.o: schedule.cpp schedule.hpp score_schedule.cpp
-	$(CC) -c schedule.cpp
+	$(CC) -c schedule.cpp score_schedule.cpp
 
 rules.o: rules.cc rules.h
 	$(CC) -c rules.cc
