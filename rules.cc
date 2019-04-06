@@ -4,6 +4,7 @@ int get_shift_duration(work_shift ws){
 		case work_shift::morning: return 8;
 		case work_shift::afternoon: return 8;
 		case work_shift::night: return 10;
+		case work_shift::nop: return 0;
 		default: assert(!"NOT A VALID WORK SHIFT");
 	}
 }

@@ -6,7 +6,7 @@ FLAGS= -Wall $(BASICFLAGS)
 OPTFLAG= 
 
 program: employee.o main.o schedule.o rules.o
-	$(CC) $(FLAGS) employee.o main.o schedule.o rules.o -o program
+	$(CC) $(FLAGS) employee.o main.o schedule.o rules.o score_schedule.o -o program
 
 main.o: main.cc main.h
 	$(CC) -c main.cc

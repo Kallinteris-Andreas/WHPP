@@ -5,14 +5,14 @@
 int schedule::score(){
 	int total_score = 0;
 	
-	for (int worker_index = 0; worker_index != NO_WORKERS; worker_index){
+	for (int worker_index = 0; worker_index != NO_WORKERS; worker_index++){
 		//Max 70 work Hours -- 1000 points
 		{
 			total_score += (CUR_WORKER.total_work_hours() <= 70)*1000;
 		}
 		//Max 7 consecutive work days -- 1000 points
 		{
-			for (int day_index; day_index != NO_DAYS; day_index++){
+			for (int day_index = 0; day_index != NO_DAYS; day_index++){
 				for (int i = 0; i != 7; i++){
 					if (!CUR_WORKER.works((day_index+i) % NO_DAYS))
 						break;
@@ -24,7 +24,7 @@ int schedule::score(){
 		}
 		//Max 4 consecutive work night shifts -- 1000 points
 		{
-			for (int day_index; day_index != NO_DAYS; day_index++){
+			for (int day_index = 0; day_index != NO_DAYS; day_index++){
 				for (int i = 0; i != 4; i++){
 					if (CUR_WORKER.get_work_shift((day_index+i)%NO_DAYS) != 
 							work_shift::night)
@@ -37,7 +37,7 @@ int schedule::score(){
 		}
 		//Do not work morning shift after night shift -- 1000 points
 		{
-			for (int day_index; day_index != NO_DAYS; day_index++){
+			for (int day_index = 0; day_index != NO_DAYS; day_index++){
 				if (CUR_WORKER.get_work_shift(day_index) == work_shift::night && 
 					CUR_WORKER.get_work_shift((day_index+1)%NO_DAYS)==work_shift::morning)
 					goto no_points4;
@@ -47,7 +47,7 @@ int schedule::score(){
 		}
 		//Do not work morning shift after afternoon shift -- 800 points
 		{
-			for (int day_index; day_index != NO_DAYS; day_index++){
+			for (int day_index = 0; day_index != NO_DAYS; day_index++){
 				if (CUR_WORKER.get_work_shift(day_index) == work_shift::afternoon && 
 					CUR_WORKER.get_work_shift((day_index+1)%NO_DAYS)==work_shift::morning)
 					goto no_points5;
@@ -57,7 +57,7 @@ int schedule::score(){
 		}
 		//Do not work afternoon shift after night shift -- 600 points
 		{
-			for (int day_index; day_index != NO_DAYS; day_index++){
+			for (int day_index = 0; day_index != NO_DAYS; day_index++){
 				if (CUR_WORKER.get_work_shift(day_index) == work_shift::night && 
 					CUR_WORKER.get_work_shift((day_index+1)%NO_DAYS) == work_shift::afternoon)
 					goto no_points6;
@@ -67,7 +67,7 @@ int schedule::score(){
 		}
 		//At least 2 free days after 4 consecutive night shifts -- 100 points
 		{
-			for (int day_index; day_index != NO_DAYS; day_index++){
+			for (int day_index = 0; day_index != NO_DAYS; day_index++){
 				for (int i = 0; i != 4; i++){
 					if (CUR_WORKER.get_work_shift((day_index+i)%NO_DAYS) != work_shift::night)
 						goto next7;
@@ -83,7 +83,7 @@ int schedule::score(){
 		}
 		//At least 2 free days after 7 consecutive shifts -- 1 point
 		{
-			for (int day_index; day_index != NO_DAYS; day_index++){
+			for (int day_index = 0; day_index != NO_DAYS; day_index++){
 				for (int i = 0; i != 7; i++){
 					if (!CUR_WORKER.works((day_index+i)%NO_DAYS))
 						goto next8;
@@ -99,7 +99,7 @@ int schedule::score(){
 		}
 		//Avoid {Work, No Work, Work} Pattern -- 1 point
 		{
-			for (int day_index; day_index != NO_DAYS; day_index++){
+			for (int day_index = 0; day_index != NO_DAYS; day_index++){
 				if (CUR_WORKER.works(day_index) && !CUR_WORKER.works((day_index+1)%NO_DAYS)
 						&& CUR_WORKER.works((day_index+2)%NO_DAYS))
 					goto done9;
@@ -109,7 +109,7 @@ int schedule::score(){
 		}
 		//Avoid {No Work, Work, No Work} Pattern -- 1 point
 		{
-			for (int day_index; day_index != NO_DAYS; day_index++){
+			for (int day_index = 0; day_index != NO_DAYS; day_index++){
 				if (!CUR_WORKER.works(day_index) && CUR_WORKER.works((day_index+1)%NO_DAYS)
 						&& !CUR_WORKER.works((day_index+2)%NO_DAYS))
 					goto done10;
@@ -129,6 +129,8 @@ int schedule::score(){
 					(CUR_WORKER.works(12)||CUR_WORKER.works(13))))
 				total_score++;
 		}
+		/*
+		*/
 	}
 
 	return total_score;
