@@ -13,3 +13,5 @@ work_shift employee::get_work_shift(int day_index){
 
 void employee::set_work_shift(int day_index, work_shift ws){shift[day_index] = ws;}
 
+bool employee::works(int day_index){return shift[day_index] != work_shift::nop};
+

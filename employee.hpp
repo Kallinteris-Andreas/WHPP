@@ -10,5 +10,6 @@ class employee {
 		employee();
 		work_shift get_work_shift(int);
 		void set_work_shift(int, work_shift);
+		bool works(int);
 };
 #endif
