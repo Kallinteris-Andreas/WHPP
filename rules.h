@@ -4,6 +4,7 @@
 
 #define NO_WORKERS 30
 #define NO_WEEKS 2
+#define NO_DAYS NO_WEEKS*2
 
 enum class work_shift {
 	morning,
