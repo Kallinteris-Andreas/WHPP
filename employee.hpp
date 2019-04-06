@@ -5,7 +5,6 @@
 
 class employee {
 	private:
-		uint8_t hours_worked = 0;
 		work_shift shift[NO_WEEKS*7];
 	public:
 		employee();
