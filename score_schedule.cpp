@@ -6,6 +6,14 @@ int schedule::score(){
 	int total_score = 0;
 	
 	for (int worker_index = 0; worker_index != NO_WORKERS; worker_index++){
+		total_score += score_individual(worker_index);
+	}
+
+	return total_score;
+}
+
+int schedule::score_individual(int worker_index){
+		int total_score = 0;
 		//Max 70 work Hours -- 1000 points
 		{
 			total_score += (CUR_WORKER.total_work_hours() <= 70)*1000;
@@ -129,10 +137,6 @@ int schedule::score(){
 					(CUR_WORKER.works(12)||CUR_WORKER.works(13))))
 				total_score++;
 		}
-		/*
-		*/
-	}
-
-	return total_score;
+		return total_score;
 }
 
