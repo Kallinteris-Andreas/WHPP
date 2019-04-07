@@ -6,6 +6,11 @@
 #include "employee.hpp"
 #include "rules.h"
 #include <string.h>
+#include <random>
+#include <stdlib.h>
+#include <chrono>
+
+#define MAX_INT 23476867 // not exactly
 
 class schedule {
 	private:
@@ -15,7 +20,7 @@ class schedule {
 		schedule();
 		void print();
 		void init();
-		bool satisfy_constraint();
+		bool satisfy_constraint(employee* workers_table);
 		int score();
 		int score_individual(int worker);
 		//Returns 2 indexes considering score_individual 

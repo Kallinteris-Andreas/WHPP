@@ -45,7 +45,7 @@ void schedule::init(){
 	}
 }
 
-bool schedule::satisfy_constraint(){
+bool schedule::satisfy_constraint(employee* workers_table){
 	for (int day_index = 0; day_index != NO_WEEKS*7; day_index++){
 		int morning_shifts = get_no_shifts(get_day_type(day_index), work_shift::morning);
 		int afternoon_shifts = get_no_shifts(get_day_type(day_index), work_shift::afternoon);
@@ -55,7 +55,7 @@ bool schedule::satisfy_constraint(){
 		int cur_night_shifts = 0;
 
 		for (int worker_index = 0; worker_index != NO_WORKERS; worker_index++){
-			switch(workers[worker_index].get_work_shift(day_index)){
+			switch(workers_table[worker_index].get_work_shift(day_index)){
 				case work_shift::morning: cur_morning_shifts++;
 					break;
 				case work_shift::afternoon: cur_afternoon_shifts++;

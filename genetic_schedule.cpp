@@ -1,16 +1,72 @@
 #include "schedule.hpp"
-#include <stdlib.h>
+
 using namespace std;
 
 employee temp_workers[NO_WORKERS];
+default_random_engine dre (chrono::steady_clock::now().time_since_epoch().count());
+int random(int lim){
+	uniform_int_distribution<int> uid {0,lim};
+	return uid(dre);
+}
 void schedule::whpp_algorithm(){
-	
+	init();
+	print();
+	employee best_plan_workers[NO_WORKERS];
+	int min_weight=MAX_INT;
+
+	if (satisfy_constraint(workers)){
+		std::cout << "The current schedule DOES satisfy the constraint" << std::endl;
+		std::cout << "The current score is: " << score() << std::endl;
+	}
+	else
+		std::cout << "The current schedule DOES NOT satisfy the constraint" << std::endl;
+	min_weight = score();
+	memcpy(best_plan_workers,workers,sizeof(workers));
+
+	int iter_max = 2000;
+	bool flag = true;
+	int iterations =0;
+	int* picks ;
+	float mutation_prob = 0.2;
+
+	while(flag){
+
+		for(int i=0;i<NO_WORKERS/2;i++){
+			memcpy(temp_workers,workers,sizeof(workers));
+			picks = selection();
+			crossbreed_vertical(picks[0],picks[1],i*2);
+			//crossbreed_horizontal(picks[0],picks[1],i*2);
+		}		
+		//mutation_reversal(mutation_prob);
+		//mutation_random_genes(mutation_prob);
+		if (satisfy_constraint(temp_workers)){
+			std::cout << "The current schedule DOES satisfy the constraint" << std::endl;
+			memcpy(workers,temp_workers,sizeof(workers));
+			//print();
+			std::cout << "The current score is: " << score() << std::endl;
+
+		}
+		else
+			//std::cout << "The current schedule DOES NOT satisfy the constraint" << std::endl;
+
+		if(score()<min_weight){
+			min_weight = score();
+			memcpy(best_plan_workers,workers,sizeof(workers));
+
+		}
+		iterations ++;
+		flag = iterations < iter_max && true;// to be improved
+
+	}
+
+	cout<<"Best Cost is: "<<min_weight<<endl;
 }
 
 int* schedule::selection(){
 	int total_score = score();
 	float sum = 0;float x = 0;
-	float* weights = (float*)malloc(sizeof(float)*NO_WORKERS);
+	//float* weights = (float*)malloc(sizeof(float)*NO_WORKERS);
+	float weights[NO_WORKERS];
 	int* parents = (int*)malloc(sizeof(int)*2);
 	
 	for (int worker_index = 0; worker_index != NO_WORKERS; worker_index++){
@@ -20,11 +76,13 @@ int* schedule::selection(){
 		//cout<<worker_index<<" . score : "<<sum<<endl;
 	}
 
-	srand(time(NULL));
+	
 	float r ;
 
 	for(int y = 0;y<2;y++){
-		r = (float)rand()/RAND_MAX ;
+		srand(y+time(NULL));
+		//r = (float)rand()/RAND_MAX ;
+		r = (float)random(MAX_INT)/MAX_INT;
 		sum = 0 ;
 
 		for (int worker_index = 0; worker_index != NO_WORKERS; worker_index++){
@@ -34,7 +92,7 @@ int* schedule::selection(){
 				break;
 			}			
 		}
-		cout<<"random num is : "<<r<<" and index is: "<<parents[y]<<endl;
+		//cout<<"random num is : "<<r<<" and index is: "<<parents[y]<<endl;
 	}
 
 	return parents;
@@ -47,7 +105,7 @@ void schedule::crossbreed_vertical(int a,int b,int position){
 	employee wB = employee();
 	srand(time(NULL));
 
-	int r = rand()%(NO_WEEKS*7) + 1;
+	int r = random(MAX_INT)%(NO_WEEKS*7) + 1;
 
 	for(int i=0; i<NO_WEEKS*7;i++){
 		if(i<r){
@@ -61,8 +119,6 @@ void schedule::crossbreed_vertical(int a,int b,int position){
 	temp_workers[position] = wA;
 	temp_workers[position+1] = wB;
 
-	//memcpy(workers,temp_workers,sizeof(workers));
-	//print();
 }
 void schedule::crossbreed_horizontal(int a,int b,int position){
 //TO BE IMPLEMENTED
