@@ -10,7 +10,10 @@
 #include <stdlib.h>
 #include <chrono>
 
+using namespace std;
+
 #define MAX_INT 23476867 // not exactly
+
 
 class schedule {
 	private:
@@ -29,9 +32,9 @@ class schedule {
 		void crossbreed_vertical(int a,int b,int position);
 		void crossbreed_horizontal(int a,int b,int position);
 		//This mutation occurs with p possibility per chromosome and rotate the whole genome
-		void mutation_reversal(int possibility);
+		void mutation_reversal(int possibility,int index);
 		//This mutation occurs with p possibility per chromosome and mutate one random genes
-		void mutation_random_genes(int possibility);
+		void mutation_random_genes(int possibility,int index);
 
 		void whpp_algorithm();
 };

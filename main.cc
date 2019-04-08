@@ -1,7 +1,10 @@
 #include "main.h"
-
+//using namespace std;
 int main(){
-	schedule sched;
+	int pop = 100;
 	
-	sched.whpp_algorithm();
+	genetic_algorithm g(pop);
+	cout<<g.selection()<<endl;
+	
+	return 0;
 }

@@ -1,6 +1,6 @@
 #include "schedule.hpp"
 
-using namespace std;
+/*
 
 employee temp_workers[NO_WORKERS];
 default_random_engine dre (chrono::steady_clock::now().time_since_epoch().count());
@@ -14,6 +14,7 @@ void schedule::whpp_algorithm(){
 	employee best_plan_workers[NO_WORKERS];
 	int min_weight=MAX_INT;
 
+
 	if (satisfy_constraint(workers)){
 		std::cout << "The current schedule DOES satisfy the constraint" << std::endl;
 		std::cout << "The current score is: " << score() << std::endl;
@@ -21,24 +22,26 @@ void schedule::whpp_algorithm(){
 	else
 		std::cout << "The current schedule DOES NOT satisfy the constraint" << std::endl;
 	min_weight = score();
+	return;
 	memcpy(best_plan_workers,workers,sizeof(workers));
 
 	int iter_max = 2000;
 	bool flag = true;
 	int iterations =0;
 	int* picks ;
-	float mutation_prob = 0.2;
+	float mutation_prob = 0.1;
 
 	while(flag){
 
 		for(int i=0;i<NO_WORKERS/2;i++){
-			memcpy(temp_workers,workers,sizeof(workers));
 			picks = selection();
 			crossbreed_vertical(picks[0],picks[1],i*2);
 			//crossbreed_horizontal(picks[0],picks[1],i*2);
+			mutation_reversal(mutation_prob,i*2);
+			//mutation_random_genes(mutation_prob,i*2);			
 		}		
-		//mutation_reversal(mutation_prob);
-		//mutation_random_genes(mutation_prob);
+		//memcpy(workers,temp_workers,sizeof(workers));
+		
 		if (satisfy_constraint(temp_workers)){
 			std::cout << "The current schedule DOES satisfy the constraint" << std::endl;
 			memcpy(workers,temp_workers,sizeof(workers));
@@ -46,13 +49,13 @@ void schedule::whpp_algorithm(){
 			std::cout << "The current score is: " << score() << std::endl;
 
 		}
-		else
-			//std::cout << "The current schedule DOES NOT satisfy the constraint" << std::endl;
+		else{
+			std::cout << "The current schedule DOES NOT satisfy the constraint" << std::endl;
+		}
 
-		if(score()<min_weight){
+		if(score()< min_weight){
 			min_weight = score();
 			memcpy(best_plan_workers,workers,sizeof(workers));
-
 		}
 		iterations ++;
 		flag = iterations < iter_max && true;// to be improved
@@ -60,6 +63,7 @@ void schedule::whpp_algorithm(){
 	}
 
 	cout<<"Best Cost is: "<<min_weight<<endl;
+	print();
 }
 
 int* schedule::selection(){
@@ -80,8 +84,7 @@ int* schedule::selection(){
 	float r ;
 
 	for(int y = 0;y<2;y++){
-		srand(y+time(NULL));
-		//r = (float)rand()/RAND_MAX ;
+
 		r = (float)random(MAX_INT)/MAX_INT;
 		sum = 0 ;
 
@@ -124,40 +127,39 @@ void schedule::crossbreed_horizontal(int a,int b,int position){
 //TO BE IMPLEMENTED
 }
 
-void schedule::mutation_reversal(int possibility){
-	srand(time(NULL));
-	float r = (float)rand()/RAND_MAX ;
+void schedule::mutation_reversal(int possibility,int index){
+	
+	float r = (float)random(MAX_INT)/MAX_INT;
 	employee w;
 
-	for (int worker_index = 0; worker_index != NO_WORKERS; worker_index++){
-		r = (float)rand()/RAND_MAX ;
-
+	for(int y=0;y<2;y++){
 		if(r<possibility){
 			w = employee();
 
 			for(int i=0; i<NO_WEEKS*7;i++){
-				w.set_work_shift(NO_WEEKS*7-i-1,temp_workers[worker_index].get_work_shift(i));
+				w.set_work_shift(NO_WEEKS*7-i-1,temp_workers[index+y].get_work_shift(i));
 			}	
-			temp_workers[worker_index] = w;
+			temp_workers[index+y] = w;
 		}
 	}
+	
+	
 
 }
-void schedule::mutation_random_genes(int possibility){
-	srand(time(NULL));
-	float r = (float)rand()/RAND_MAX ;
+void schedule::mutation_random_genes(int possibility,int index){
+	float r;
 	int pr;
 	employee w;
 	int pick;
 
-	for (int worker_index = 0; worker_index != NO_WORKERS; worker_index++){
-		r = (float)rand()/RAND_MAX ;
+	for (int y=0;y<2;y++){
+		r  = (float)random(MAX_INT)/MAX_INT;
 
 		if(r<possibility){
 			w = employee();
-			pr = rand()%(NO_WEEKS*7) + 1;
-			w = temp_workers[worker_index];
-			pick = rand()%(4);
+			pr = random(MAX_INT)%(NO_WEEKS*7) + 1;
+			w = temp_workers[index + y];
+			pick = random(MAX_INT)%(4);
 
 			switch(pick){
 				case 0:
@@ -176,12 +178,12 @@ void schedule::mutation_random_genes(int possibility){
 					assert(0);
 			}
 
-			temp_workers[worker_index] = w;
+			temp_workers[index+y] = w;
 		}
 	}
 }
 
-
+*/
 
 
 
