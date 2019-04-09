@@ -10,8 +10,17 @@ class genetic_algorithm {
 	private:
 		int pop;
 		schedule* population;
+		schedule* new_population;
 	public:
 		genetic_algorithm(int pop);
 		int selection();
+		void fitness_function(int pass_present);
+		void crossbreed_vertical(int a ,int b,int index);
+
+		void mutation_reversal(int possibility,int index);
+		void mutation_random_column_random_reverse(int possibility,int index);
+
+		schedule whpp();
+
 };
 #endif

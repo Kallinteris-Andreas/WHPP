@@ -23,9 +23,13 @@ class schedule {
 		schedule();
 		void print();
 		void init();
-		bool satisfy_constraint(employee* workers_table);
+		bool satisfy_constraint();
 		int score();
 		int score_individual(int worker);
+
+		employee* get_worker(int i){return &workers[i];};
+		void set_worker(int i,employee w){workers[i]=w;};
+
 		//Returns 2 indexes considering score_individual 
 		int* selection(); 
 		//Takes two employee indexes and places their two crossbreeds at a table

@@ -17,7 +17,7 @@ void schedule::print(){
 }
 
 default_random_engine dre (chrono::steady_clock::now().time_since_epoch().count());
-int random(int lim){
+int rando(int lim){
 	uniform_int_distribution<int> uid {0,lim};
 	return uid(dre);
 }
@@ -28,31 +28,31 @@ void schedule::init(){
 		int slots_left = get_no_shifts(get_day_type(day_index), work_shift::morning);
 		//std::cout << slots_left << std::endl;
 		for (;slots_left != 0; slots_left--){
-			int worker_index = random(MAX_INT) % NO_WORKERS;
+			int worker_index = rando(MAX_INT) % NO_WORKERS;
 			while (workers[worker_index].get_work_shift(day_index) != work_shift::nop)
-				worker_index = rand() % NO_WORKERS;
+				worker_index = rando(MAX_INT) % NO_WORKERS;
 			workers[worker_index].set_work_shift(day_index, work_shift::morning);
 		}
 
 		slots_left = get_no_shifts(get_day_type(day_index), work_shift::afternoon);
 		for (;slots_left != 0; slots_left--){
-			int worker_index = random(MAX_INT) % NO_WORKERS;
+			int worker_index = rando(MAX_INT) % NO_WORKERS;
 			while (workers[worker_index].get_work_shift(day_index) != work_shift::nop)
-				worker_index = random(MAX_INT) % NO_WORKERS;
+				worker_index = rando(MAX_INT) % NO_WORKERS;
 			workers[worker_index].set_work_shift(day_index, work_shift::afternoon);
 		}
 
 		slots_left = get_no_shifts(get_day_type(day_index), work_shift::night);
 		for (;slots_left != 0; slots_left--){
-			int worker_index = random(MAX_INT) % NO_WORKERS;
+			int worker_index = rando(MAX_INT) % NO_WORKERS;
 			while (workers[worker_index].get_work_shift(day_index) != work_shift::nop)
-				worker_index = random(MAX_INT) % NO_WORKERS;
+				worker_index = rando(MAX_INT) % NO_WORKERS;
 			workers[worker_index].set_work_shift(day_index, work_shift::night);
 		}
 	}
 }
 
-bool schedule::satisfy_constraint(employee* workers_table){
+bool schedule::satisfy_constraint(){
 	for (int day_index = 0; day_index != NO_WEEKS*7; day_index++){
 		int morning_shifts = get_no_shifts(get_day_type(day_index), work_shift::morning);
 		int afternoon_shifts = get_no_shifts(get_day_type(day_index), work_shift::afternoon);
@@ -62,7 +62,7 @@ bool schedule::satisfy_constraint(employee* workers_table){
 		int cur_night_shifts = 0;
 
 		for (int worker_index = 0; worker_index != NO_WORKERS; worker_index++){
-			switch(workers_table[worker_index].get_work_shift(day_index)){
+			switch(workers[worker_index].get_work_shift(day_index)){
 				case work_shift::morning: cur_morning_shifts++;
 					break;
 				case work_shift::afternoon: cur_afternoon_shifts++;
