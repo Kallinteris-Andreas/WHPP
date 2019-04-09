@@ -14,7 +14,7 @@ class genetic_algorithm {
 	public:
 		genetic_algorithm(int pop);
 		int selection();
-		void fitness_function(int pass_present);
+		void natural_selection();
 		void crossbreed_vertical(int a ,int b,int index);
 
 		void mutation_reversal(int possibility,int index);

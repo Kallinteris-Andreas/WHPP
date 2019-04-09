@@ -1,10 +1,14 @@
 #include "genetic_algorithm.hpp"
 
+#define rounds_without_improvement 50
+#define pass_present 5
+
 schedule genetic_algorithm::whpp(){
-	int iter_max = 200;
-	float mutation_prob = 0.3;
+	int iter_max = 20;
+	float mutation_prob = 1.5;
 	int counter = 0;
-	int best_chromosomes_to_pass = 0.99; // x%
+	int impr_counter = rounds_without_improvement;
+	
 
 	schedule best_schedule;
 	int best_weight = MAX_INT;
@@ -16,31 +20,39 @@ schedule genetic_algorithm::whpp(){
 		}
 	}
 	while(counter<=iter_max){
+		cout<<"======================="<<endl;
 		for(int i =0;i<pop/2;i++){
 			a = selection();
 			b = selection();
 
 			crossbreed_vertical(a,b,i*2);
 
-			//mutation_reversal(mutation_prob,i*2);
-			//mutation_reversal(mutation_prob,i*2+1);
+			mutation_reversal(mutation_prob,i*2);
+			mutation_reversal(mutation_prob,i*2+1);
 
-			mutation_random_column_random_reverse(mutation_prob,i*2);
-			mutation_random_column_random_reverse(mutation_prob,i*2+1);
+			//mutation_random_column_random_reverse(mutation_prob,i*2);
+			//mutation_random_column_random_reverse(mutation_prob,i*2+1);
 			cout<<new_population[i*2].score()<<endl;
 			cout<<new_population[i*2+1].score()<<endl;
 			if(new_population[i*2].score()<=best_weight){
 				best_weight = new_population[i].score();
 				best_schedule = new_population[i];
+				impr_counter = rounds_without_improvement;
 			}
 			if(new_population[i*2+1].score()<=best_weight){
 				best_weight = new_population[i*2+1].score();
 				best_schedule = new_population[i*2+1];
+				impr_counter = rounds_without_improvement;
 			}
 
 		}
-		//fitness_function(int pass_present);
-		population = new_population;
+		impr_counter --;
+		if(impr_counter == 0){
+			cout<<"Exited, beacause of stagnation"<<endl;
+			return best_schedule;
+		}
+		natural_selection();
+		memcpy(population,new_population,sizeof(population));
 		counter++;
 	}
 
@@ -57,7 +69,7 @@ genetic_algorithm::genetic_algorithm(int popp){
 		population[i] = schedule();
 		new_population[i] = schedule();
 		population[i].init();
-		cout<<population[i].score()<<endl;
+		//cout<<population[i].score()<<endl;
 		assert(population[i].satisfy_constraint());
 	}
 	
@@ -68,22 +80,35 @@ int rand(int lim){
 	return uid(dr);
 }
 
-void genetic_algorithm::fitness_function(int pass_present){
-	schedule* temp_population = (schedule*)calloc(pop,sizeof(schedule));
-	int min;
-	schedule val;
+void genetic_algorithm::natural_selection(){
+	//schedule* temp_population = (schedule*)calloc(pop,sizeof(schedule));
+	int old_min;int old_index;
+	int new_max;int new_index;
+	schedule old_val;
+	schedule new_val;
 
-	for(int i =0;i<pop;i++){
-		min = MAX_INT;
-
-		for(int j =0;j<2*pop;j++){
-			if(min>population[i].score()){
-
+	//for(int i =0;i<pop*(pass_present/100);i++){
+	for(int i =0;i<pass_present;i++){
+		cout<<i<<endl;
+		old_min = MAX_INT;
+		new_max = 0;
+		for(int j =0;j<pop;j++){
+			
+			if(old_min>population[j].score()){
+				old_min = population[j].score();
+				old_val = population[j];
+				old_index = j;
+			}
+			if(new_max<new_population[j].score()){
+				new_max = new_population[j].score();
+				new_val = new_population[j];
+				new_index = j;
 			}
 		}
+		cout<<old_min<<"  "<<new_max<<endl;
+		new_population[new_index] = old_val;
+		population[old_index] = new_val;
 	}
-
-	free(temp_population);
 }
 
 int genetic_algorithm::selection(){
@@ -115,7 +140,7 @@ void genetic_algorithm::crossbreed_vertical(int a ,int b,int index){
 	schedule kid2 = schedule();
 
 	int r = rand(MAX_INT)%(NO_WEEKS*7);
-	cout<<r<<endl;
+	
 	for(int i=0; i<NO_WEEKS*7;i++){
 		if(r>i){
 			for(int j=0;j<NO_WORKERS;j++){
@@ -129,7 +154,7 @@ void genetic_algorithm::crossbreed_vertical(int a ,int b,int index){
 			}
 		}
 	}
-	cout<<a<<" "<<b<<endl;
+	
 	assert(kid1.satisfy_constraint());
 	assert(kid2.satisfy_constraint());
 
