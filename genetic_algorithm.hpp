@@ -15,7 +15,10 @@ class genetic_algorithm {
 		genetic_algorithm(int pop);
 		int selection();
 		void natural_selection();
+
 		void crossbreed_vertical(int a ,int b,int index);
+		void crossbreed_vertical_switch(int a ,int b,int index);
+
 
 		void mutation_reversal(int possibility,int index);
 		void mutation_random_column_random_reverse(int possibility,int index);

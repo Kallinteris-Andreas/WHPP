@@ -1,11 +1,12 @@
 #include "genetic_algorithm.hpp"
 
-#define rounds_without_improvement 50
-#define pass_present 5
+#define rounds_without_improvement 300
+#define pass_present 10
+#define elitism false
 
 schedule genetic_algorithm::whpp(){
-	int iter_max = 20;
-	float mutation_prob = 1.5;
+	int iter_max = 20000;
+	float mutation_prob = 0.015;
 	int counter = 0;
 	int impr_counter = rounds_without_improvement;
 	
@@ -20,26 +21,26 @@ schedule genetic_algorithm::whpp(){
 		}
 	}
 	while(counter<=iter_max){
-		cout<<"======================="<<endl;
+		cout<<counter<<".======================= best is :"<<best_weight<<endl;
 		for(int i =0;i<pop/2;i++){
 			a = selection();
 			b = selection();
 
-			crossbreed_vertical(a,b,i*2);
+			//crossbreed_vertical(a,b,i*2);
+			crossbreed_vertical_switch(a,b,i*2);
 
-			mutation_reversal(mutation_prob,i*2);
-			mutation_reversal(mutation_prob,i*2+1);
+			//mutation_reversal(mutation_prob,i*2);
+			//mutation_reversal(mutation_prob,i*2+1);
 
-			//mutation_random_column_random_reverse(mutation_prob,i*2);
-			//mutation_random_column_random_reverse(mutation_prob,i*2+1);
-			cout<<new_population[i*2].score()<<endl;
-			cout<<new_population[i*2+1].score()<<endl;
-			if(new_population[i*2].score()<=best_weight){
-				best_weight = new_population[i].score();
-				best_schedule = new_population[i];
+			mutation_random_column_random_reverse(mutation_prob,i*2);
+			mutation_random_column_random_reverse(mutation_prob,i*2+1);
+
+			if(new_population[i*2].score()<best_weight){
+				best_weight = new_population[i*2].score();
+				best_schedule = new_population[i*2];
 				impr_counter = rounds_without_improvement;
 			}
-			if(new_population[i*2+1].score()<=best_weight){
+			if(new_population[i*2+1].score()<best_weight){
 				best_weight = new_population[i*2+1].score();
 				best_schedule = new_population[i*2+1];
 				impr_counter = rounds_without_improvement;
@@ -51,7 +52,7 @@ schedule genetic_algorithm::whpp(){
 			cout<<"Exited, beacause of stagnation"<<endl;
 			return best_schedule;
 		}
-		natural_selection();
+		//natural_selection();
 		memcpy(population,new_population,sizeof(population));
 		counter++;
 	}
@@ -154,12 +155,76 @@ void genetic_algorithm::crossbreed_vertical(int a ,int b,int index){
 			}
 		}
 	}
-	
+
+
 	assert(kid1.satisfy_constraint());
 	assert(kid2.satisfy_constraint());
 
-	new_population[index] = kid1;
-	new_population[index+1] = kid2;
+	if( elitism == false){
+		new_population[index] = kid1;
+	}else if(kid1.score()<parentA.score()){
+		new_population[index] = kid1;
+	}else{
+		new_population[index] = parentA;
+	}
+	
+	if( elitism == false){
+		new_population[index+1] = kid2;
+	}else if(kid2.score()<parentB.score()){
+		new_population[index+1] = kid2;
+	}else{
+		new_population[index+1] = parentB;
+	}
+	/*cout<<"1.Parent: "<<parentA.score()<<" ,kid: "<<new_population[index].score()<<endl;
+	cout<<"2.Parent: "<<parentB.score()<<" ,kid: "<<new_population[index+1].score()<<endl;*/
+	
+}
+
+void genetic_algorithm::crossbreed_vertical_switch(int a ,int b,int index){
+	schedule parentA = population[a];
+	schedule parentB = population[b];
+
+	schedule kid1 = schedule();
+	schedule kid2 = schedule();
+
+	
+	
+	for(int i=0; i<NO_WEEKS*7;i++){
+		if(i%2 == 0){
+			for(int j=0;j<NO_WORKERS;j++){
+				(kid1.get_worker(j))->set_work_shift(i,(parentB.get_worker(j))->get_work_shift(i));
+				(kid2.get_worker(j))->set_work_shift(i,(parentA.get_worker(j))->get_work_shift(i));
+			}
+		}else{
+			for(int j=0;j<NO_WORKERS;j++){
+				(kid1.get_worker(j))->set_work_shift(i,(parentA.get_worker(j))->get_work_shift(i));
+				(kid2.get_worker(j))->set_work_shift(i,(parentB.get_worker(j))->get_work_shift(i));
+			}
+		}
+	}
+
+
+	assert(kid1.satisfy_constraint());
+	assert(kid2.satisfy_constraint());
+
+	if( elitism == false){
+		new_population[index] = kid1;
+	}else if(kid1.score()<parentA.score()){
+		new_population[index] = kid1;
+	}else{
+		new_population[index] = parentA;
+	}
+	
+	if( elitism == false){
+		new_population[index+1] = kid2;
+	}else if(kid2.score()<parentB.score()){
+		new_population[index+1] = kid2;
+	}else{
+		new_population[index+1] = parentB;
+	}
+	/*cout<<"1.Parent: "<<parentA.score()<<" ,kid: "<<new_population[index].score()<<endl;
+	cout<<"2.Parent: "<<parentB.score()<<" ,kid: "<<new_population[index+1].score()<<endl;*/
+	
 }
 
 void genetic_algorithm::mutation_reversal(int possibility,int index){
@@ -173,6 +238,7 @@ void genetic_algorithm::mutation_reversal(int possibility,int index){
 			kid.set_worker(NO_WORKERS-i-1,*(parent.get_worker(i)));
 		}
 	}
+	//cout<<"3.*.Parent: "<<parent.score()<<" ,kid: "<<kid.score()<<endl;
 	assert(kid.satisfy_constraint());
 	new_population[index] = kid;
 }
@@ -180,20 +246,31 @@ void genetic_algorithm::mutation_reversal(int possibility,int index){
 void genetic_algorithm::mutation_random_column_random_reverse(int possibility,int index){
 	schedule parent = new_population[index];
 	schedule kid = new_population[index];
-	float r = rand(1);
+	float r;
+	int rr,r2,r3;
+	for(rr= 0;rr<NO_WEEKS*7;rr++){
+		r = rand(1);
+		if(r <= possibility){
 
-	if(r <= possibility){
+			//rr = rand(MAX_INT)%(NO_WEEKS*7);
+			r2 = rand(MAX_INT)%(NO_WEEKS*7);
+		    r3 = rand(MAX_INT)%(NO_WEEKS*7);
 
-		int rr = rand(MAX_INT)%(NO_WEEKS*7);
-		int r2 = rand(MAX_INT)%(NO_WEEKS*7);
-		int r3 = rand(MAX_INT)%(NO_WEEKS*7);
-
-		(kid.get_worker(r2))->set_work_shift(rr,(parent.get_worker(r3))->get_work_shift(rr));
-		(kid.get_worker(r3))->set_work_shift(rr,(parent.get_worker(r2))->get_work_shift(rr));
-
-
+		    (kid.get_worker(r2))->set_work_shift(rr,(parent.get_worker(r3))->get_work_shift(rr));
+			(kid.get_worker(r3))->set_work_shift(rr,(parent.get_worker(r2))->get_work_shift(rr));
+		    
+		}
+		
 	}
+	//cout<<"3.*.Parent: "<<parent.score()<<" ,kid: "<<kid.score()<<endl;
 	assert(kid.satisfy_constraint());
-	new_population[index] = kid;
+
+	if( elitism == false){
+		new_population[index] = kid;
+	}else if(kid.score()<parent.score()){
+		new_population[index] = kid;
+	}else{
+		new_population[index] = parent;
+	}
 
 }
