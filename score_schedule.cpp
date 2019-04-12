@@ -139,4 +139,3 @@ int schedule::score_individual(int worker_index){
 		}
 		return total_score;
 }
-

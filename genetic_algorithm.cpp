@@ -1,17 +1,16 @@
 #include "genetic_algorithm.hpp"
 
-#define rounds_without_improvement 300
+#define rounds_without_improvement 64
 #define pass_present 10
 #define elitism false //IF new child is worse than parent kill it
+#define ELITISM //IF new child is worse than parent kill it
 #define mutation_prob 0.015
-
-default_random_engine dr (chrono::steady_clock::now().time_since_epoch().count());
 
 schedule genetic_algorithm::whpp(){
 	int iter_max = 20000;
 	int counter = 0;
 	int impr_counter = rounds_without_improvement;
-	
+
 
 	schedule best_schedule;
 	int best_weight = MAX_INT;
@@ -23,7 +22,13 @@ schedule genetic_algorithm::whpp(){
 		}
 	}
 	while(counter<=iter_max){
-		cout<<counter<<".======================= best is :"<<best_weight<<endl;
+		//cout<<counter<<".======================= best is :"<<best_weight<<endl;
+		//long sum_of_scores = 0;
+		//for(int i =0;i<pop;i++)
+			//sum_of_scores += population[i].score();
+
+		//std::cout << "Sum Of Scores: " << sum_of_scores/pop << std::endl;
+
 		for(int i =0;i<pop/2;i++){
 			a = selection();
 			b = selection();
@@ -37,12 +42,12 @@ schedule genetic_algorithm::whpp(){
 			mutation_random_column_random_reverse(mutation_prob,i*2);
 			mutation_random_column_random_reverse(mutation_prob,i*2+1);
 
-			if(new_population[i*2].score()<best_weight){
+			if(new_population[i*2].score()>best_weight){
 				best_weight = new_population[i*2].score();
 				best_schedule = new_population[i*2];
 				impr_counter = rounds_without_improvement;
 			}
-			if(new_population[i*2+1].score()<best_weight){
+			if(new_population[i*2+1].score()>best_weight){
 				best_weight = new_population[i*2+1].score();
 				best_schedule = new_population[i*2+1];
 				impr_counter = rounds_without_improvement;
@@ -79,6 +84,7 @@ genetic_algorithm::genetic_algorithm(int popp){
 
 
 int rand(int lim){
+	static default_random_engine dr (chrono::steady_clock::now().time_since_epoch().count());
 	uniform_int_distribution<int> uid {0,lim};
 	return uid(dr);
 }
@@ -128,6 +134,14 @@ void genetic_algorithm::crossbreed_vertical(int a ,int b,int index){
 	}
 
 
+//#ifdef ELITISM
+	//if(kid1.score()<parentA.score())
+		//new_population[index] = kid1;
+	//else
+		//new_population[index] = parentA;
+//#else
+	//new_population[index] = kid1;
+//#endif
 	if(elitism == false){
 		new_population[index] = kid1;
 	}else if(kid1.score()<parentA.score()){
@@ -176,7 +190,7 @@ void genetic_algorithm::crossbreed_vertical_switch(int a ,int b,int index){
 
 	if( elitism == false){
 		new_population[index] = kid1;
-	}else if(kid1.score()<parentA.score()){
+	}else if(kid1.score()>parentA.score()){
 		new_population[index] = kid1;
 	}else{
 		new_population[index] = parentA;
@@ -184,13 +198,13 @@ void genetic_algorithm::crossbreed_vertical_switch(int a ,int b,int index){
 	
 	if( elitism == false){
 		new_population[index+1] = kid2;
-	}else if(kid2.score()<parentB.score()){
+	}else if(kid2.score()>parentB.score()){
 		new_population[index+1] = kid2;
 	}else{
 		new_population[index+1] = parentB;
 	}
-	/*cout<<"1.Parent: "<<parentA.score()<<" ,kid: "<<new_population[index].score()<<endl;
-	cout<<"2.Parent: "<<parentB.score()<<" ,kid: "<<new_population[index+1].score()<<endl;*/
+	//cout<<"1.Parent: "<<parentA.score()<<" ,kid: "<<new_population[index].score()<<endl;
+	//cout<<"2.Parent: "<<parentB.score()<<" ,kid: "<<new_population[index+1].score()<<endl;
 	
 }
 
@@ -218,23 +232,20 @@ void genetic_algorithm::mutation_random_column_random_reverse(int possibility,in
 	for(rr= 0;rr<NO_WEEKS*7;rr++){
 		r = rand(1);
 		if(r <= possibility){
-
 			//rr = rand(MAX_INT)%(NO_WEEKS*7);
 			r2 = rand(MAX_INT)%(NO_WEEKS*7);
-		    r3 = rand(MAX_INT)%(NO_WEEKS*7);
+			r3 = rand(MAX_INT)%(NO_WEEKS*7);
 
-		    (kid.get_worker(r2))->set_work_shift(rr,(parent.get_worker(r3))->get_work_shift(rr));
+			(kid.get_worker(r2))->set_work_shift(rr,(parent.get_worker(r3))->get_work_shift(rr));
 			(kid.get_worker(r3))->set_work_shift(rr,(parent.get_worker(r2))->get_work_shift(rr));
-		    
 		}
-		
 	}
 	//cout<<"3.*.Parent: "<<parent.score()<<" ,kid: "<<kid.score()<<endl;
 	assert(kid.satisfy_constraint());
 
-	if( elitism == false){
+	if(elitism == false){
 		new_population[index] = kid;
-	}else if(kid.score()<parent.score()){
+	}else if(kid.score()>parent.score()){
 		new_population[index] = kid;
 	}else{
 		new_population[index] = parent;
