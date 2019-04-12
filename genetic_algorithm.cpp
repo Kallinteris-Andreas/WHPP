@@ -2,11 +2,13 @@
 
 #define rounds_without_improvement 300
 #define pass_present 10
-#define elitism false
+#define elitism false //IF new child is worse than parent kill it
+#define mutation_prob 0.015
+
+default_random_engine dr (chrono::steady_clock::now().time_since_epoch().count());
 
 schedule genetic_algorithm::whpp(){
 	int iter_max = 20000;
-	float mutation_prob = 0.015;
 	int counter = 0;
 	int impr_counter = rounds_without_improvement;
 	
@@ -57,14 +59,13 @@ schedule genetic_algorithm::whpp(){
 		counter++;
 	}
 
-
 	return best_schedule;
 }
 
 genetic_algorithm::genetic_algorithm(int popp){
 	pop = popp;
-	population = (schedule*)calloc(pop,sizeof(schedule));
-	new_population = (schedule*)calloc(pop,sizeof(schedule));
+	population = (schedule*)malloc(pop*sizeof(schedule));
+	new_population = (schedule*)malloc(pop*sizeof(schedule));
 
 	for(int i=0;i<pop;i++){
 		population[i] = schedule();
@@ -74,47 +75,17 @@ genetic_algorithm::genetic_algorithm(int popp){
 		assert(population[i].satisfy_constraint());
 	}
 	
-};
-default_random_engine dr (chrono::steady_clock::now().time_since_epoch().count());
+}
+
+
 int rand(int lim){
 	uniform_int_distribution<int> uid {0,lim};
 	return uid(dr);
 }
 
-void genetic_algorithm::natural_selection(){
-	//schedule* temp_population = (schedule*)calloc(pop,sizeof(schedule));
-	int old_min;int old_index;
-	int new_max;int new_index;
-	schedule old_val;
-	schedule new_val;
-
-	//for(int i =0;i<pop*(pass_present/100);i++){
-	for(int i =0;i<pass_present;i++){
-		cout<<i<<endl;
-		old_min = MAX_INT;
-		new_max = 0;
-		for(int j =0;j<pop;j++){
-			
-			if(old_min>population[j].score()){
-				old_min = population[j].score();
-				old_val = population[j];
-				old_index = j;
-			}
-			if(new_max<new_population[j].score()){
-				new_max = new_population[j].score();
-				new_val = new_population[j];
-				new_index = j;
-			}
-		}
-		cout<<old_min<<"  "<<new_max<<endl;
-		new_population[new_index] = old_val;
-		population[old_index] = new_val;
-	}
-}
-
 int genetic_algorithm::selection(){
 	int sum = 0;
-	float weights[pop];
+	int weights[pop];
 
 	for (int i = 0; i != pop; i++){
 		weights[i] = population[i].score();
@@ -157,10 +128,7 @@ void genetic_algorithm::crossbreed_vertical(int a ,int b,int index){
 	}
 
 
-	assert(kid1.satisfy_constraint());
-	assert(kid2.satisfy_constraint());
-
-	if( elitism == false){
+	if(elitism == false){
 		new_population[index] = kid1;
 	}else if(kid1.score()<parentA.score()){
 		new_population[index] = kid1;
@@ -168,7 +136,7 @@ void genetic_algorithm::crossbreed_vertical(int a ,int b,int index){
 		new_population[index] = parentA;
 	}
 	
-	if( elitism == false){
+	if(elitism == false){
 		new_population[index+1] = kid2;
 	}else if(kid2.score()<parentB.score()){
 		new_population[index+1] = kid2;
@@ -187,7 +155,6 @@ void genetic_algorithm::crossbreed_vertical_switch(int a ,int b,int index){
 	schedule kid1 = schedule();
 	schedule kid2 = schedule();
 
-	
 	
 	for(int i=0; i<NO_WEEKS*7;i++){
 		if(i%2 == 0){
@@ -273,4 +240,40 @@ void genetic_algorithm::mutation_random_column_random_reverse(int possibility,in
 		new_population[index] = parent;
 	}
 
+}
+
+//everthing below here is deprecated
+//everthing below here is deprecated
+//everthing below here is deprecated
+//everthing below here is deprecated
+//everthing below here is deprecated
+void genetic_algorithm::natural_selection(){
+	//schedule* temp_population = (schedule*)calloc(pop,sizeof(schedule));
+	int old_min;int old_index;
+	int new_max;int new_index;
+	schedule old_val;
+	schedule new_val;
+
+	//for(int i =0;i<pop*(pass_present/100);i++){
+	for(int i =0;i<pass_present;i++){
+		cout<<i<<endl;
+		old_min = MAX_INT;
+		new_max = 0;
+		for(int j =0;j<pop;j++){
+			
+			if(old_min>population[j].score()){
+				old_min = population[j].score();
+				old_val = population[j];
+				old_index = j;
+			}
+			if(new_max<new_population[j].score()){
+				new_max = new_population[j].score();
+				new_val = new_population[j];
+				new_index = j;
+			}
+		}
+		cout<<old_min<<"  "<<new_max<<endl;
+		new_population[new_index] = old_val;
+		population[old_index] = new_val;
+	}
 }

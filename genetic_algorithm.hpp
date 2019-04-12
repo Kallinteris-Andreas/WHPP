@@ -5,6 +5,7 @@
 
 #define MAX_INT 23476867 // not exactly
 
+//default_random_engine dr (chrono::steady_clock::now().time_since_epoch().count());
 
 class genetic_algorithm {
 	private:
