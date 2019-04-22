@@ -1,6 +1,7 @@
 #ifndef RULES_DEF
 #define RULES_DEF
 #include <cassert>
+#include <cstdlib>
 
 #define NO_WORKERS 30
 #define NO_WEEKS 2
@@ -31,4 +32,6 @@ day get_day_type(int day_index);
 
 char get_day_char(day d);
 char get_work_shift_char(work_shift ws);
+
+work_shift random_shift();
 #endif

@@ -44,10 +44,12 @@ schedule genetic_algorithm::whpp(){
 
 			//mutation_reversal(MUTATION_PROB,i*2);
 			//mutation_reversal(MUTATION_PROB,i*2+1);
+			mutation_daily(MUTATION_PROB,i*2);
+			mutation_daily(MUTATION_PROB,i*2+1);
 
 			//for (int j = 0; j != 8; j++){
-				mutation_random_column_random_reverse(MUTATION_PROB,i*2);
-				mutation_random_column_random_reverse(MUTATION_PROB,i*2+1);
+			//mutation_random_column_random_reverse(MUTATION_PROB,i*2);
+			//mutation_random_column_random_reverse(MUTATION_PROB,i*2+1);
 			//}
 
 			if(new_population[i*2].score()>best_weight){
@@ -83,7 +85,6 @@ genetic_algorithm::genetic_algorithm(int popp){
 		population[i] = schedule();
 		new_population[i] = schedule();
 		population[i].init();
-		//cout<<population[i].score()<<endl;
 		assert(population[i].satisfy_constraint());
 	}
 	
@@ -145,9 +146,6 @@ void genetic_algorithm::crossbreed_vertical(int a ,int b,int index){
 		new_population[index+1] = kid2;
 #endif
 
-	/*cout<<"1.Parent: "<<parentA.score()<<" ,kid: "<<new_population[index].score()<<endl;
-	cout<<"2.Parent: "<<parentB.score()<<" ,kid: "<<new_population[index+1].score()<<endl;*/
-	
 }
 
 void genetic_algorithm::mutation_reversal(int possibility, int index){
@@ -159,9 +157,34 @@ void genetic_algorithm::mutation_reversal(int possibility, int index){
 		for(int i =0;i<NO_WORKERS;i++)
 			kid.set_worker(NO_WORKERS-i-1,*(parent.get_worker(i)));
 
-	//cout<<"3.*.Parent: "<<parent.score()<<" ,kid: "<<kid.score()<<endl;
 	assert(kid.satisfy_constraint());
 	new_population[index] = kid;
+}
+
+//Randomly change the workers who works in a shift
+void genetic_algorithm::mutation_daily(int possibility, int index){
+	if (rand()%128 >= possibility)
+		return;
+	int day = rand() % NO_DAYS;
+	work_shift ws = random_shift();
+
+	schedule old = new_population[index];
+	
+	//find a worker at that shift
+	int w_id;
+	for (w_id=rand()%NO_WORKERS; old.get_worker(w_id)->get_work_shift(day) != ws; w_id=rand()%NO_WORKERS);
+
+	int random_w_id = rand() % NO_WORKERS;
+	//swap with a random worker
+	{
+		work_shift temp_s = old.get_worker(random_w_id)->get_work_shift(day);
+		old.get_worker(random_w_id)->set_work_shift(day,old.get_worker(w_id)->get_work_shift(day));
+		old.get_worker(w_id)->set_work_shift(day, temp_s);
+		assert(new_population[index].satisfy_constraint());
+	}
+
+	if (new_population[index].score() < old.score())
+		new_population[index] = old;
 }
 
 void genetic_algorithm::mutation_random_column_random_reverse(int possibility, int index){
@@ -176,7 +199,6 @@ void genetic_algorithm::mutation_random_column_random_reverse(int possibility, i
 			(kid.get_worker(r0))->set_work_shift(i,(parent.get_worker(r1))->get_work_shift(i));
 			(kid.get_worker(r1))->set_work_shift(i,(parent.get_worker(r0))->get_work_shift(i));
 		}
-	//cout<<"3.*.Parent: "<<parent.score()<<" ,kid: "<<kid.score()<<endl;
 	assert(kid.satisfy_constraint());
 
 

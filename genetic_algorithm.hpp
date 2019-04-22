@@ -25,6 +25,8 @@ class genetic_algorithm {
 		void mutation_reversal(int possibility,int index);
 		void mutation_random_column_random_reverse(int possibility,int index);
 
+		void mutation_daily(int possibility,int index);
+
 		schedule whpp();
 
 };

@@ -100,3 +100,11 @@ char get_work_shift_char(work_shift ws){
 		default: assert(!"NOT A VALID WORK SHIFT");
 	}
 }
+
+work_shift random_shift(){
+	switch(rand()%3) {
+		case 0: return work_shift::morning;
+		case 1: return work_shift::afternoon;
+		case 2: return work_shift::night;
+	}
+}
