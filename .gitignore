@@ -31,3 +31,8 @@
 *.out
 *.app
 program
+
+#latex
+*.aux
+*.log
+*.pdf

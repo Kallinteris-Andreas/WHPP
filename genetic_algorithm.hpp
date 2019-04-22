@@ -12,13 +12,14 @@ class genetic_algorithm {
 		int pop;
 		schedule* population;
 		schedule* new_population;
+
+		int best_person();
 	public:
 		genetic_algorithm(int pop);
 		int selection();
 		void natural_selection();
 
 		void crossbreed_vertical(int a ,int b,int index);
-		void crossbreed_vertical_switch(int a ,int b,int index);
 
 
 		void mutation_reversal(int possibility,int index);
@@ -27,4 +28,11 @@ class genetic_algorithm {
 		schedule whpp();
 
 };
+
+int rand(int lim){
+	static default_random_engine dr (chrono::steady_clock::now().time_since_epoch().count());
+	uniform_int_distribution<int> uid {0,lim};
+	return uid(dr);
+}
+
 #endif
