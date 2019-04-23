@@ -1,9 +1,9 @@
 \documentclass{article}
-%\usepackage{graphicx}
+\usepackage{graphicx}
 
-\title{Artificial Intelligence 1st Project}
+\title{Artificial Intelligence \\ WHPP Project Report}
 \date{2019-04-19}
-\author{Kallinteris Andreas, [Add name]}
+\author{Kallinteris Andreas\\ Orfanoudakis Stavros}
 
 \begin{document}
 \maketitle
@@ -22,7 +22,83 @@ Mutating the schedules is done by randomly switching 2 shifts of workers and eva
 \section*{Terminating Conditions}
 At first a simple iteration counter $iter_{max}$ was used to terminate the top level loop but it was observed that after a small number of iteration the algorithm stopped improving (due to reaching a local maxima),
 therefore to combat this after a certain number of iterations $iter_{imr}$ without any improvement the algorithm exits.
-\section*{Performance Tuning}
+
+\section*{Performance Tuning-Testing}
+
+Below we are gonna represent few graphs about different ways of crossover and mutation while changing the values of the according probabilities. In every graph will be displayed the best person of the population and the average of the current generation. The y-axis is indicating the total score, greater score means more soft constraints are satisfied. The x-axis is displaying the number of iterations.
+
+\subsection*{a)}
+
+\begin{table}[!htb]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Pcross} & \textbf{Pmut} & \textbf{Psel} & \textbf{Mutation Function} & \textbf{Pop} \\ \hline
+60\% & 1\% & 50\% & random daily & 256 \\ \hline
+\end{tabular}
+\end{table}
+\includegraphics[scale=0.75]{11}
+
+\subsection*{b)}
+\begin{table}[!htb]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Pcross} & \textbf{Pmut} & \textbf{Psel} & \textbf{Mutation Function} & \textbf{Pop} \\ \hline
+60\% & 1\% & 50\% & random reverse & 256 \\ \hline
+\end{tabular}
+\end{table}
+\includegraphics[scale=0.75]{12}
+
+\subsection*{c)}
+\begin{table}[!htb]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Pcross} & \textbf{Pmut} & \textbf{Psel} & \textbf{Mutation Function} & \textbf{Pop} \\ \hline
+60\% & 1\% & 50\% & random reverse & 256 \\ \hline
+\end{tabular}
+\end{table}
+In this case we are using \textbf{elitism} in selection section, so it tends to a local maximum much faster
+
+\includegraphics[scale=0.75]{13}
+
+\subsection*{d)}
+\begin{table}[!htb]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Pcross} & \textbf{Pmut} & \textbf{Psel} & \textbf{Mutation Function} & \textbf{Pop} \\ \hline
+60\% & 1\% & 50\% & random reverse & 100 \\ \hline
+\end{tabular}
+\end{table}
+\includegraphics[scale=0.75]{14}
+
+\subsection*{f)}
+\begin{table}[!htb]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Pcross} & \textbf{Pmut} & \textbf{Psel} & \textbf{Mutation Function} & \textbf{Pop} \\ \hline
+10\% & 1\% & 100\% & random daily & 256 \\ \hline
+\end{tabular}
+\end{table}
+\includegraphics[scale=0.75]{16}
+
+\subsection*{g)}
+\begin{table}[!htb]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Pcross} & \textbf{Pmut} & \textbf{Psel} & \textbf{Mutation Function} & \textbf{Pop} \\ \hline
+10\% & 1\% & 100\% & random reverse & 256 \\ \hline
+\end{tabular}
+\end{table}
+
+\includegraphics[scale=0.75]{17}
+
+ A lot more different combinations where tested but these where representing the various aspects of our algorithm the best.\\
+
 $iter_{max}$ was set to a very high value as the algorithm is always terminated by $iter_{imr}$ (note: if we had a time deadline $iter_{max}$ is set accordingly),
 $iter_{imr}$ was set to 256 as higher values never produced better results,
 the population count scales the performance of the algorithm from 4 to 16000 sub linearly any increase past 256 very increases the and does scale any further are 16000 (16k has the same performance as 32k and 64k),
