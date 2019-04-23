@@ -2,6 +2,7 @@
 
 #define CUR_WORKER workers[worker_index]
 
+//Note max Total Score is 165180
 int schedule::score(){
 	int total_score = 0;
 	
@@ -12,6 +13,7 @@ int schedule::score(){
 	return total_score;
 }
 
+//Note max Total Score is 5506
 int schedule::score_individual(int worker_index){
 		int total_score = 0;
 		//Max 70 work Hours -- 1000 points

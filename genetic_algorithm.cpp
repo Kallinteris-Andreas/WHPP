@@ -1,56 +1,64 @@
 #include "genetic_algorithm.hpp"
 
-#define ROUNDS_WITHOUT_IMPROVEMENT 1024
-#define MAX_NO_ITERATIONS 20000
+#define ROUNDS_WITHOUT_IMPROVEMENT 256
+#define MAX_NO_ITERATIONS 16384
 #define ELITISM //IF new child is worse than parent kill it
-#define MUTATION_PROB 128 // out of 128
+#define PROB_MUTATION 128 // out of 128
+#define PROB_CROSS 128 // out of 128
+#define PROB_SELECT 128 // out of 128
 //#define SELECT_BEST_ONLY
 
+#define LOG
+#define PRINT_TERM
 //define one of the following
 #define CROSSBREEDING_INTERLEVED
 //#define CROSSBREEDING_RANDOM
 
 schedule genetic_algorithm::whpp(){
+#ifdef LOG
+	std::ofstream log_file("log.bat", ios::trunc);
+	log_file << "Best" << '\t' << "Average" << '\n';
+#endif
 	int impr_counter = ROUNDS_WITHOUT_IMPROVEMENT;
 
+	schedule best_schedule = population[best_person()];
+	int best_weight = best_schedule.score();
 
-	schedule best_schedule;
-	int best_weight = MAX_INT;
-	int a,b;
-	for(int i =0;i<pop;i++){
-		if(best_weight>population[i].score()){
-			best_weight = population[i].score();
-			best_schedule = population[i];
-		}
-	}
 	for(int counter = 0; counter != MAX_NO_ITERATIONS; counter++){
-		cout<<counter<<".======================= best is :"<<best_weight<<endl;
 		long sum_of_scores = 0;
-		for(int i =0;i<pop;i++)
+		for(int i = 0; i != pop; i++)
 			sum_of_scores += population[i].score();
+	int average = sum_of_scores/pop;
 
-		std::cout << "Average Of Scores: " << sum_of_scores/pop << std::endl;
+#ifdef PRINT_TERM
+		std::cout << counter << ".======================= best is: " << best_weight << std::endl
+		<< "Average Of Scores: " << average << std::endl;
+#endif
+#ifdef LOG
+		log_file << best_weight << '\t' << average << '\n';
+#endif
 
-		for(int i =0;i<pop/2;i++){
+		int a = rand() % (pop-1)+1;
+		int b = rand() % (pop-1) + 1;
+		for(int i = 0; i != pop/2; i++){
 			//select 2 persons to crossbreed
-			#ifdef SELECT_BEST_ONLY
-				a = best_person();
-			#else
-				a = rand() % (pop-1)+1;
-			#endif
-			b = rand() % (pop-1)+1;
+			if (PROB_SELECT > rand()%128){
+				#ifdef SELECT_BEST_ONLY
+					a = best_person();
+				#else
+					a = rand() % (pop-1)+1;
+				#endif
+				b = rand() % (pop-1) + 1;
+			}
 
 			crossbreed_vertical(a,b,i*2);
 
-			//mutation_reversal(MUTATION_PROB,i*2);
-			//mutation_reversal(MUTATION_PROB,i*2+1);
-			mutation_daily(MUTATION_PROB,i*2);
-			mutation_daily(MUTATION_PROB,i*2+1);
-
-			//for (int j = 0; j != 8; j++){
-			//mutation_random_column_random_reverse(MUTATION_PROB,i*2);
-			//mutation_random_column_random_reverse(MUTATION_PROB,i*2+1);
-			//}
+			//mutation_reversal(i*2);
+			//mutation_reversal(i*2+1);
+			//mutation_daily(i*2);
+			//mutation_daily(i*2+1);
+			mutation_random_column_random_reverse(i*2);
+			mutation_random_column_random_reverse(i*2+1);
 
 			if(new_population[i*2].score()>best_weight){
 				best_weight = new_population[i*2].score();
@@ -62,11 +70,10 @@ schedule genetic_algorithm::whpp(){
 				best_schedule = new_population[i*2+1];
 				impr_counter = ROUNDS_WITHOUT_IMPROVEMENT;
 			}
-
 		}
-		impr_counter --;
-		if(impr_counter == 0){
-			cout<<"Exited, beacause of stagnation"<<endl;
+
+		if(--impr_counter == 0){
+			std::cout << "Exited, beacause of stagnation" << std::endl;
 			return best_schedule;
 		}
 		//natural_selection();
@@ -77,6 +84,7 @@ schedule genetic_algorithm::whpp(){
 }
 
 genetic_algorithm::genetic_algorithm(int popp){
+	assert(popp%2 == 0 && "Population Count must be an even number");
 	pop = popp;
 	population = (schedule*)malloc(pop*sizeof(schedule));
 	new_population = (schedule*)malloc(pop*sizeof(schedule));
@@ -87,11 +95,16 @@ genetic_algorithm::genetic_algorithm(int popp){
 		population[i].init();
 		assert(population[i].satisfy_constraint());
 	}
-	
 }
 
 
 void genetic_algorithm::crossbreed_vertical(int a ,int b,int index){
+	if (rand()%128 >= PROB_CROSS){
+		for (int i = 0; i != pop; i++)
+			new_population[i] = population[i];
+		return;
+	}
+
 	schedule parentA = population[a];
 	schedule parentB = population[b];
 
@@ -148,12 +161,12 @@ void genetic_algorithm::crossbreed_vertical(int a ,int b,int index){
 
 }
 
-void genetic_algorithm::mutation_reversal(int possibility, int index){
+void genetic_algorithm::mutation_reversal(int index){
 	schedule parent = new_population[index];
 	schedule kid = new_population[index];
 
 
-	if(rand()%128 <= possibility)
+	if(rand()%128 <= PROB_MUTATION)
 		for(int i =0;i<NO_WORKERS;i++)
 			kid.set_worker(NO_WORKERS-i-1,*(parent.get_worker(i)));
 
@@ -162,8 +175,8 @@ void genetic_algorithm::mutation_reversal(int possibility, int index){
 }
 
 //Randomly change the workers who works in a shift
-void genetic_algorithm::mutation_daily(int possibility, int index){
-	if (rand()%128 >= possibility)
+void genetic_algorithm::mutation_daily(int index){
+	if (rand()%128 >= PROB_MUTATION)
 		return;
 	int day = rand() % NO_DAYS;
 	work_shift ws = random_shift();
@@ -187,19 +200,24 @@ void genetic_algorithm::mutation_daily(int possibility, int index){
 		new_population[index] = old;
 }
 
-void genetic_algorithm::mutation_random_column_random_reverse(int possibility, int index){
+void genetic_algorithm::mutation_random_column_random_reverse(int index){
 	schedule parent = new_population[index];
 	schedule kid = new_population[index];
 	int r0, r1;
 	for(int i= 0; i<NO_WEEKS*7; i++)
-		if(rand()%128 < possibility){
-			r0 = rand(MAX_INT)%(NO_WEEKS*7);
-			r1 = rand(MAX_INT)%(NO_WEEKS*7);
+		if(rand()%128 < PROB_MUTATION){
+			r0 = rand()%NO_WORKERS;
+			r1 = rand()%NO_WORKERS;
 
 			(kid.get_worker(r0))->set_work_shift(i,(parent.get_worker(r1))->get_work_shift(i));
 			(kid.get_worker(r1))->set_work_shift(i,(parent.get_worker(r0))->get_work_shift(i));
 		}
-	assert(kid.satisfy_constraint());
+
+	//rarely happens
+	if (!kid.satisfy_constraint()){
+		new_population[index] = parent;
+		return;
+	}
 
 
 #ifdef ELITISM
@@ -214,9 +232,14 @@ void genetic_algorithm::mutation_random_column_random_reverse(int possibility, i
 
 int genetic_algorithm::best_person(){
 	schedule* best_person = population;
-	for (int i = 0; i != pop; i++)
-		if (population[i].score() > best_person->score())
+	int best_score = population->score();
+	for (int i = 0; i != pop; i++){
+		int c_score = population[i].score();
+		if (c_score > best_score){
 			best_person = population+i;
+			best_score = c_score;
+		}
+	}
 
 	return best_person - population;
 }

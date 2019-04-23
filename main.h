@@ -2,5 +2,4 @@
 #include "schedule.hpp"
 #include "genetic_algorithm.hpp"
 
-#define POP_COUNT 64
-
+#define POP_COUNT 256

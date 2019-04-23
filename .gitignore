@@ -36,3 +36,7 @@ program
 *.aux
 *.log
 *.pdf
+
+#logs
+*.bat
+*.csv

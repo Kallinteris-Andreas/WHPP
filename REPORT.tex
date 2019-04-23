@@ -1,19 +1,36 @@
 \documentclass{article}
-\usepackage{graphicx}
+%\usepackage{graphicx}
 
 \title{Artificial Intelligence 1st Project}
-\date{2019-04-05}
+\date{2019-04-19}
 \author{Kallinteris Andreas, [Add name]}
 
 \begin{document}
 \maketitle
 \section*{Introduction}
-This report analyzes our implementation of a standard genetic algorithm to solve the WHPP problem (according to the specification) where for genomes for work shifts of the employees.
+This report analyzes our implementation of a standard genetic algorithm to solve the WHPP problem (according to the specification) where for genomes are the work shifts of the employees.
 The following sections show how each step of the algorithm was implemented.
+\section*{Population Initialize}
+The initial population is feasible.
 \section*{Crossbreeding}
 Due to the limitations of hard constraint (number of people working per shift) the option of crossbreeding all of the population together is not possible,
 instead we breed 2 schedules a large amount of times,
-which schedules are breed (randomly or by taking the scores into consideration) and how (randomly or by elitsm) does not appear to affect the performance in a measurable way.
+out of the two schedules that are selected for breeding the one is the best and the other is a random one with $p_sel$ to select a different one in each iteration (doing anything smarter/more complex increases the runtime of the program by a huge amount).
 \section*{Mutation}
+Due to the limitations of hard constraint (number of people working per shift) mutating the schedules is quite limited (we can't mutate per genome).
+Mutating the schedules is done by randomly switching 2 shifts of workers and evaluating the difference.
+\section*{Terminating Conditions}
+At first a simple iteration counter $iter_{max}$ was used to terminate the top level loop but it was observed that after a small number of iteration the algorithm stopped improving (due to reaching a local maxima),
+therefore to combat this after a certain number of iterations $iter_{imr}$ without any improvement the algorithm exits.
+\section*{Performance Tuning}
+$iter_{max}$ was set to a very high value as the algorithm is always terminated by $iter_{imr}$ (note: if we had a time deadline $iter_{max}$ is set accordingly),
+$iter_{imr}$ was set to 256 as higher values never produced better results,
+the population count scales the performance of the algorithm from 4 to 16000 sub linearly any increase past 256 very increases the and does scale any further are 16000 (16k has the same performance as 32k and 64k),
+$p_{mut}$ was set to 1 as any lower values resulted in lower performance
+$p_{cross}$ did not have any effect on the performance of the algorithm but lower values increased the runtime of the program,
+$p_{sel}$ does not affect the performance in any measurable way.
 \section*{Conclusion}
+The performance of the genetic algorithm produces similar results to naively generating a ton of random schedules and selecting the best one when taking in account total runtime expect when the runtime is really limited.
+An option of for improving the performance of the genetic algorithm would be to improve the selection but that would come with further degradation to the runtime.
+The best overall performance can be obtained by running many small/simple genetic algorithms and getting the best result rather that having few complex ones (when taking into account runtime) because with a small amount of computational power we can reach a local minimum.
 \end{document}
